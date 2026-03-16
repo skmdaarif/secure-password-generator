@@ -1,0 +1,8 @@
+Secure Password Generator CLI
+--------------------------------
+
+Generated Passwords
+-------------------
+1: Q=[FFm"o5)
+2: $r$|=E`LD,
+3: Bm!5!.*z>}
