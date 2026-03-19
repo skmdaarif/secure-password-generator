@@ -37,12 +37,13 @@ jobs:
         --noconfirm \
         --windowed \
         --name SecurePasswordGenerator \
+        --icon=app/assets/passwd-icon.png \
         --paths=. \
         --hidden-import=password_generator \
         --hidden-import=password_generator.core \
         app/main.py
 
-    # 🔥 macOS BUILD (FORCE INTEL x86_64)
+    # 🔥 macOS BUILD (Intel compatible)
     - name: Build (macOS)
       if: runner.os == 'macOS'
       run: |
@@ -50,6 +51,7 @@ jobs:
         --noconfirm \
         --windowed \
         --name SecurePasswordGenerator \
+        --icon=app/assets/icon.icns \
         --paths=. \
         --hidden-import=password_generator \
         --hidden-import=password_generator.core \
@@ -63,6 +65,7 @@ jobs:
         --noconfirm ^
         --windowed ^
         --name SecurePasswordGenerator ^
+        --icon=app/assets/passwd-icon.ico ^
         --paths=. ^
         --hidden-import=password_generator ^
         --hidden-import=password_generator.core ^
@@ -70,7 +73,7 @@ jobs:
       shell: cmd
 
     # 📦 Upload artifacts
-    - name: Upload build
+    - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
         name: SecurePasswordGenerator-${{ matrix.os }}
