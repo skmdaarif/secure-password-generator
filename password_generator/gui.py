@@ -21,138 +21,114 @@ SUBTLE = "#94a3b8"
 BUTTON = "#16a34a"
 
 
-# ================= SPLASH SCREEN =================
+# ================= PASSWORD STRENGTH =================
+def evaluate_strength(password):
+    score = 0
+    if len(password) >= 8: score += 1
+    if len(password) >= 12: score += 1
+    if any(c.islower() for c in password): score += 1
+    if any(c.isupper() for c in password): score += 1
+    if any(c.isdigit() for c in password): score += 1
+    if any(not c.isalnum() for c in password): score += 1
+
+    if score <= 2:
+        return "Weak", "#ef4444"
+    elif score <= 4:
+        return "Medium", "#facc15"
+    else:
+        return "Strong", "#22c55e"
+
+
+# ================= SPLASH =================
 class SplashScreen:
     def __init__(self, root, duration=2000):
         self.root = root
-        self.duration = duration
-
         self.splash = tk.Toplevel(root)
         self.splash.overrideredirect(True)
         self.splash.configure(bg=BG)
 
-        width = 400
-        height = 250
-
+        width, height = 400, 250
         x = (self.splash.winfo_screenwidth() // 2) - (width // 2)
         y = (self.splash.winfo_screenheight() // 2) - (height // 2)
-
         self.splash.geometry(f"{width}x{height}+{x}+{y}")
 
-        tk.Label(self.splash,
-                 text="🔐 Secure-Password-Generator",
+        tk.Label(self.splash, text="🔐 Secure-Password-Generator",
                  font=("Segoe UI", 18, "bold"),
-                 bg=BG,
-                 fg=ACCENT).pack(pady=40)
+                 bg=BG, fg=ACCENT).pack(pady=40)
 
-        tk.Label(self.splash,
-                 text="Launching secure generator...",
-                 font=("Segoe UI", 10),
-                 bg=BG,
-                 fg=SUBTLE).pack(pady=10)
+        tk.Label(self.splash, text="Launching secure generator...",
+                 bg=BG, fg=SUBTLE).pack()
 
-        try:
-            img = tk.PhotoImage(file=icon_path)
-            tk.Label(self.splash, image=img, bg=BG).pack()
-            self.splash.image = img
-        except:
-            pass
-
-        self.root.after(self.duration, self.close)
+        self.root.after(duration, self.close)
 
     def close(self):
         self.splash.destroy()
         self.root.deiconify()
 
 
-# ================= MAIN GUI =================
+# ================= GUI =================
 class PasswordGeneratorGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Secure-Password-Generator")
-        self.root.geometry("520x600")
+        self.root.geometry("520x720")
         self.root.configure(bg=BG)
 
-        # ===== ICON =====
+        self.passwords = []
+        self.show_passwords = True
+
         try:
             icon = tk.PhotoImage(file=icon_path)
             self.root.iconphoto(True, icon)
         except:
             pass
 
-        # ===== STYLE =====
         style = ttk.Style()
         style.theme_use("clam")
-
-        # FIXED COMBOBOX VISIBILITY
-        style.configure("TCombobox",
-                        fieldbackground=BG,
-                        background=BG,
-                        foreground=TEXT)
+        style.configure("TCombobox", fieldbackground=BG, background=BG, foreground=TEXT)
         style.map("TCombobox",
-                fieldbackground=[("readonly", BG)],
-                foreground=[("readonly", TEXT)])
+                  fieldbackground=[("readonly", BG)],
+                  foreground=[("readonly", TEXT)])
 
-        # ===== HEADER =====
-        header = tk.Frame(root, bg=BG)
-        header.pack(pady=15)
-
-        tk.Label(header,
-                 text="🔐 Secure-Password-Generator",
+        tk.Label(root, text="🔐 Secure-Password-Generator",
                  font=("Segoe UI", 18, "bold"),
-                 bg=BG,
-                 fg=ACCENT).pack()
+                 bg=BG, fg=ACCENT).pack(pady=15)
 
-        tk.Label(header,
-                 text="Generate strong, secure passwords instantly",
-                 font=("Segoe UI", 10),
-                 bg=BG,
-                 fg=SUBTLE).pack()
-
-        # ===== CARD =====
         self.card = tk.Frame(root, bg=CARD)
         self.card.pack(padx=20, pady=10, fill="both", expand=True)
 
-        # ===== COUNT =====
         self.make_row("Number of Passwords:", "count", "1")
 
-        # ===== LENGTH TYPE =====
+        # ===== LENGTH =====
         self.length_type = tk.StringVar(value="fixed")
 
         frame_type = tk.Frame(self.card, bg=CARD)
         frame_type.pack(pady=10)
 
-        tk.Radiobutton(frame_type, text="Fixed",
-                       variable=self.length_type,
-                       value="fixed",
-                       command=self.toggle_length,
-                       bg=CARD, fg=TEXT, selectcolor=BG).pack(side=tk.LEFT, padx=10)
+        tk.Radiobutton(frame_type, text="Fixed", variable=self.length_type,
+                       value="fixed", command=self.toggle_length,
+                       bg=CARD, fg=TEXT).pack(side=tk.LEFT, padx=10)
 
-        tk.Radiobutton(frame_type, text="Range",
-                       variable=self.length_type,
-                       value="range",
-                       command=self.toggle_length,
-                       bg=CARD, fg=TEXT, selectcolor=BG).pack(side=tk.LEFT, padx=10)
+        tk.Radiobutton(frame_type, text="Range", variable=self.length_type,
+                       value="range", command=self.toggle_length,
+                       bg=CARD, fg=TEXT).pack(side=tk.LEFT, padx=10)
 
-        # ===== LENGTH CONTAINER (NEW) =====
         self.length_container = tk.Frame(self.card, bg=CARD)
         self.length_container.pack(pady=5)
 
-        # ===== FIXED =====
         self.frame_fixed = tk.Frame(self.length_container, bg=CARD)
         self.frame_fixed.pack()
         self.make_row("Length:", "length", "12", parent=self.frame_fixed)
 
-        # ===== RANGE =====
         self.frame_range = tk.Frame(self.length_container, bg=CARD)
 
-        tk.Label(self.frame_range, text="Min:", bg=CARD, fg=TEXT).pack(side=tk.LEFT, padx=5)
-        self.min_length = tk.Entry(self.frame_range, width=5, bg=BG, fg=TEXT, insertbackground=TEXT)
+        tk.Label(self.frame_range, text="Min:", bg=CARD, fg=TEXT).pack(side=tk.LEFT)
+        self.min_length = tk.Entry(self.frame_range, width=5, bg=BG, fg=TEXT)
         self.min_length.insert(0, "8")
         self.min_length.pack(side=tk.LEFT)
 
-        tk.Label(self.frame_range, text="Max:", bg=CARD, fg=TEXT).pack(side=tk.LEFT, padx=5)
-        self.max_length = tk.Entry(self.frame_range, width=5, bg=BG, fg=TEXT, insertbackground=TEXT)
+        tk.Label(self.frame_range, text="Max:", bg=CARD, fg=TEXT).pack(side=tk.LEFT)
+        self.max_length = tk.Entry(self.frame_range, width=5, bg=BG, fg=TEXT)
         self.max_length.insert(0, "20")
         self.max_length.pack(side=tk.LEFT)
 
@@ -162,77 +138,83 @@ class PasswordGeneratorGUI:
 
         tk.Label(frame_mode, text="Mode:", bg=CARD, fg=TEXT).pack(side=tk.LEFT)
 
-        self.mode = ttk.Combobox(
-                            frame_mode,
-                            values=["a", "n", "s", "an", "as", "ns", "ans"],
-                            state="readonly",
-                            width=10,
-                            foreground=TEXT)
+        self.mode = ttk.Combobox(frame_mode,
+                                 values=["a", "n", "s", "an", "as", "ns", "ans"],
+                                 state="readonly")
         self.mode.current(6)
         self.mode.pack(side=tk.LEFT, padx=10)
 
-        # ===== CHECKBOX =====
-        self.exclude_ambiguous = tk.BooleanVar()
+        self.mode.bind("<<ComboboxSelected>>", self.update_character_fields)
+
+        # ===== ADVANCED =====
+        self.advanced = tk.BooleanVar()
 
         tk.Checkbutton(self.card,
-                       text="Exclude ambiguous characters",
-                       variable=self.exclude_ambiguous,
+                       text="Advanced Character Rules",
+                       variable=self.advanced,
+                       command=self.toggle_advanced,
                        bg=CARD,
-                       fg=SUBTLE,
-                       selectcolor=BG).pack(pady=5)
+                       fg=SUBTLE).pack(pady=5)
 
-        # ===== GENERATE BUTTON (FIXED TEXT VISIBILITY) =====
-        tk.Button(self.card,
-                  text="Generate Password",
-                  command=self.generate,
-                  bg=BUTTON,
-                  fg="#0f172a",
-                  activeforeground="#0f172a",
-                  activebackground="#15803d",
-                  font=("Segoe UI", 10, "bold"),
-                  relief="flat",
-                  padx=10,
-                  pady=6).pack(pady=15)
+        self.advanced_container = tk.Frame(self.card, bg=CARD)
+        self.char_frame = tk.Frame(self.advanced_container, bg=CARD)
+
+        # IMPORTANT → store ROW FRAMES
+        self.upper_row, self.min_upper = self.make_small_input("Min Upper:", "0")
+        self.lower_row, self.min_lower = self.make_small_input("Min Lower:", "0")
+        self.numeric_row, self.min_numeric = self.make_small_input("Min Numeric:", "0")
+        self.special_row, self.min_special = self.make_small_input("Min Special:", "0")
+
+        # ===== BUTTON =====
+        self.generate_button = tk.Button(
+            self.card,
+            text="Generate Password",
+            command=self.generate,
+            bg=BUTTON,
+            fg="#0f172a",
+            font=("Segoe UI", 10, "bold")
+        )
+        self.generate_button.pack(pady=15)
 
         # ===== OUTPUT =====
-        self.output = tk.Text(self.card,
-                              height=6,
-                              bg=BG,
-                              fg=ACCENT,
-                              insertbackground=TEXT,
-                              relief="flat")
+        self.output = tk.Text(self.card, height=6, bg=BG, fg=ACCENT)
         self.output.pack(padx=10, pady=10, fill="both")
 
-        # ===== COPY BUTTON (FIXED) =====
-        tk.Button(self.card,
-                  text="Copy",
-                  command=self.copy,
-                  bg="#334155",
-                  fg="#0f172a",
-                  activeforeground="#ffffff",
-                  activebackground="#475569",
-                  relief="flat").pack(pady=5)
+        self.strength_label = tk.Label(self.card, text="Strength: -", bg=CARD, fg=SUBTLE)
+        self.strength_label.pack()
+        
+        tk.Button(self.card, text="👁 Toggle Visibility",
+          command=self.toggle_visibility,
+          fg="#0f172a", bg="#334155").pack(pady=5)
+        
+        tk.Button(self.card, text="Copy",
+          command=self.copy,
+          fg="#0f172a", bg="#334155").pack(pady=5)
 
-        # ===== FOOTER =====
-        tk.Label(root,
-                 text="Built by Sheikh Md Aarif",
-                 bg=BG,
-                 fg=SUBTLE,
-                 font=("Segoe UI", 8)).pack(pady=5)
-
+    # ================= HELPERS =================
     def make_row(self, label, attr, default, parent=None):
         parent = parent or self.card
         frame = tk.Frame(parent, bg=CARD)
         frame.pack(pady=5)
 
         tk.Label(frame, text=label, bg=CARD, fg=TEXT).pack(side=tk.LEFT)
-
-        entry = tk.Entry(frame, bg=BG, fg=TEXT, insertbackground=TEXT)
+        entry = tk.Entry(frame, bg=BG, fg=TEXT)
         entry.insert(0, default)
         entry.pack(side=tk.LEFT, padx=10)
 
         setattr(self, attr, entry)
 
+    def make_small_input(self, label, default):
+        frame = tk.Frame(self.char_frame, bg=CARD)
+        entry = tk.Entry(frame, width=5, bg=BG, fg=TEXT)
+
+        tk.Label(frame, text=label, bg=CARD, fg=TEXT).pack(side=tk.LEFT)
+        entry.insert(0, default)
+        entry.pack(side=tk.LEFT, padx=5)
+
+        return frame, entry
+
+    # ================= LOGIC =================
     def toggle_length(self):
         if self.length_type.get() == "fixed":
             self.frame_range.pack_forget()
@@ -241,59 +223,101 @@ class PasswordGeneratorGUI:
             self.frame_fixed.pack_forget()
             self.frame_range.pack()
 
+    def toggle_advanced(self):
+        if self.advanced.get():
+            self.advanced_container.pack(before=self.generate_button, pady=5)
+            self.char_frame.pack()
+            self.update_character_fields()
+        else:
+            self.advanced_container.pack_forget()
+
+    def update_character_fields(self, event=None):
+        mode = self.mode.get()
+
+        # hide all
+        for widget in self.char_frame.winfo_children():
+            widget.pack_forget()
+
+        if "a" in mode:
+            self.upper_row.pack(pady=2)
+            self.lower_row.pack(pady=2)
+
+        if "n" in mode:
+            self.numeric_row.pack(pady=2)
+
+        if "s" in mode:
+            self.special_row.pack(pady=2)
+
     def generate(self):
         try:
             count = int(self.count.get())
             mode = self.mode.get()
 
             if self.length_type.get() == "fixed":
-                length = int(self.length.get())
-                specs = build_password_specs(count, fixed_length=length, cli_mode=mode)
+                specs = build_password_specs(count,
+                                             fixed_length=int(self.length.get()),
+                                             cli_mode=mode)
             else:
-                min_len = int(self.min_length.get())
-                max_len = int(self.max_length.get())
-
-                if min_len > max_len:
-                    raise ValueError("Min length > Max length")
-
                 specs = build_password_specs(
                     count,
-                    min_length=min_len,
-                    max_length=max_len,
+                    min_length=int(self.min_length.get()),
+                    max_length=int(self.max_length.get()),
                     cli_mode=mode
                 )
 
-            pool = build_pool_config(self.exclude_ambiguous.get())
-            configs = [CharacterConfig() for _ in specs]
+            pool = build_pool_config(False)
 
-            passwords = generate_passwords(specs, configs, pool)
+            if self.advanced.get():
+                configs = [
+                    CharacterConfig(
+                        upper=int(self.min_upper.get()),
+                        lower=int(self.min_lower.get()),
+                        numeric=int(self.min_numeric.get()),
+                        special=int(self.min_special.get())
+                    )
+                    for _ in specs
+                ]
+            else:
+                configs = [CharacterConfig() for _ in specs]
 
-            self.output.delete("1.0", tk.END)
-            for i, p in enumerate(passwords, 1):
-                self.output.insert(tk.END, f"{i}: {p}\n")
+            self.passwords = generate_passwords(specs, configs, pool)
+            self.show_passwords = True
+
+            self.display_passwords()
+
+            strength, color = evaluate_strength(self.passwords[0])
+            self.strength_label.config(text=f"Strength: {strength}", fg=color)
 
         except Exception as e:
             messagebox.showerror("Error", str(e))
 
+    def display_passwords(self):
+        self.output.delete("1.0", tk.END)
+        for i, p in enumerate(self.passwords, 1):
+            if self.show_passwords:
+                self.output.insert(tk.END, f"{i}: {p}\n")
+            else:
+                self.output.insert(tk.END, f"{i}: {'•'*len(p)}\n")
+
+    def toggle_visibility(self):
+        self.show_passwords = not self.show_passwords
+        self.display_passwords()
+
     def copy(self):
-        text = self.output.get("1.0", tk.END).strip()
-        if text:
-            self.root.clipboard_clear()
-            self.root.clipboard_append(text)
-            messagebox.showinfo("Copied", "Copied to clipboard!")
+        self.root.clipboard_clear()
+        self.root.clipboard_append("\n".join(self.passwords))
+        messagebox.showinfo("Copied", "Copied!")
 
 
 # ================= MAIN =================
 if __name__ == "__main__":
     root = tk.Tk()
-
     root.withdraw()
 
-    SplashScreen(root, duration=2000)
+    SplashScreen(root, 2000)
 
-    def start_app():
+    def start():
         PasswordGeneratorGUI(root)
 
-    root.after(2000, start_app)
-
+    root.after(2000, start)
     root.mainloop()

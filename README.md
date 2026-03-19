@@ -81,7 +81,7 @@ python3 -m password_generator.cli
 Run the desktop app:
 
 ```bash
-python gui.py
+python3 password_generator/gui.py
 ```
 
 ---
