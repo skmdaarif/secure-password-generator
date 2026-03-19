@@ -1,0 +1,11 @@
+[project]
+name = "secure-password-generator"
+version = "0.1.0"
+description = "CLI tool for generating secure passwords"
+authors = [
+    { name = "Sheikh Md Aarif Al Zubair", email = "skmd.aarif5391@gmail.com" }
+]
+dependencies = []
+
+[project.scripts]
+spg = "password_generator.cli:main"

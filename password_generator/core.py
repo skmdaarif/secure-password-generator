@@ -868,7 +868,3 @@ def run_cli() -> None:
     print("-------------------")
     for index, password in enumerate(passwords, start=1):
         print(f"{index}: {password}")
-
-
-if __name__ == "__main__":
-    run_cli()

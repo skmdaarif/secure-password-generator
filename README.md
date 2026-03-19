@@ -1,61 +1,80 @@
 # Secure Password Generator CLI
 
-A small command-line tool written in Python for generating secure passwords.
+A lightweight command-line tool for generating secure, customizable passwords.
 
-It uses Python's `secrets` module to produce cryptographically secure randomness and allows users to customize password length, character types, and other password rules.
+Built using Python’s `secrets` module, this tool provides cryptographically secure randomness along with flexible configuration options for password length, character types, and constraints.
 
 ---
 
 ## Features
 
-- Generates cryptographically secure passwords
-- Customizable password length
-- Optional minimum counts for different character types
-- Interactive mode with prompts
-- Non-interactive mode using command-line arguments
-- Option to exclude ambiguous characters (`0`, `O`, `o`, `1`, `l`, `I`)
-- Ability to generate multiple passwords at once
+* Cryptographically secure password generation
+* Configurable password length
+* Support for minimum character constraints (uppercase, lowercase, numeric, special)
+* Interactive mode with guided prompts
+* Non-interactive mode using command-line arguments
+* Option to exclude ambiguous characters (`0`, `O`, `o`, `1`, `l`, `I`)
+* Generate multiple passwords in a single command
 
 ---
 
 ## Installation
 
-Clone the repository:
+Clone the repository and install locally:
 
 ```bash
 git clone https://github.com/skmdaarif/secure-password-generator.git
 cd secure-password-generator
+pip install -e .
 ```
 
-No external dependencies are required. The program uses only Python’s standard library.
+No external dependencies are required — uses only Python’s standard library.
 
 ---
 
 ## Usage
 
-### Interactive Mode
+### CLI Command (Recommended)
 
-Run the program without arguments:
+Once installed, use:
 
 ```bash
-python password_generator.py
+spg
 ```
 
-The program will guide you through password configuration using prompts.
+---
+
+### Interactive Mode
+
+Run without arguments:
+
+```bash
+spg
+```
+
+The program will guide you through password configuration step by step.
 
 ---
 
 ### Non-Interactive Mode
 
-You can generate passwords directly using command-line arguments.
-
-Example:
+Generate passwords directly using arguments:
 
 ```bash
-python password_generator.py --count 3 --length 12 --mode ans --non-interactive
+spg --count 3 --length 12 --mode ans --non-interactive
 ```
 
 This generates **3 passwords**, each **12 characters long**, containing **alphabetic**, **numeric**, and **special characters**.
+
+---
+
+### Alternative (Without Installation)
+
+You can also run the tool as a module:
+
+```bash
+python -m password_generator.cli
+```
 
 ---
 
@@ -76,10 +95,10 @@ Generated Passwords
 
 ## Technologies Used
 
-- Python
-- argparse
-- dataclasses
-- secrets module
+* Python
+* argparse
+* dataclasses
+* secrets module
 
 ---
 
