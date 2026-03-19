@@ -13,34 +13,32 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    # 1️⃣ Checkout repo
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # 2️⃣ Setup Python
     - name: Setup Python
       uses: actions/setup-python@v5
       with:
         python-version: "3.11"
 
-    # 3️⃣ Install dependencies
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install pyinstaller
 
-    # 4️⃣ Build app
+    # 🔥 IMPORTANT FIX HERE
     - name: Build application
       run: |
-        pyinstaller \
-        --noconfirm \
-        --windowed \
-        --name SecurePasswordGenerator \
-        --paths=. \
-        --paths=./password_generator \
+        pyinstaller ^
+        --noconfirm ^
+        --windowed ^
+        --name SecurePasswordGenerator ^
+        --paths=. ^
+        --hidden-import=password_generator ^
+        --hidden-import=password_generator.core ^
         app/main.py
+      shell: cmd
 
-    # 5️⃣ Upload artifacts
     - name: Upload build
       uses: actions/upload-artifact@v4
       with:
