@@ -13,20 +13,23 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
+    # 1️⃣ Checkout
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    # 2️⃣ Python setup
     - name: Setup Python
       uses: actions/setup-python@v5
       with:
         python-version: "3.11"
 
+    # 3️⃣ Install deps
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install pyinstaller
 
-    # 🔥 LINUX + MAC BUILD
+    # 🔥 LINUX + MAC BUILD (Intel compatible)
     - name: Build (Linux/macOS)
       if: runner.os != 'Windows'
       run: |
@@ -53,6 +56,7 @@ jobs:
         app/main.py
       shell: cmd
 
+    # 📦 Upload artifacts
     - name: Upload build
       uses: actions/upload-artifact@v4
       with:
