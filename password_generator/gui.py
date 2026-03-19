@@ -12,7 +12,6 @@ from password_generator.core import (
     CharacterConfig
 )
 
-
 # ===== COLORS =====
 BG = "#0f172a"
 CARD = "#1e293b"
@@ -22,6 +21,51 @@ SUBTLE = "#94a3b8"
 BUTTON = "#16a34a"
 
 
+# ================= SPLASH SCREEN =================
+class SplashScreen:
+    def __init__(self, root, duration=2000):
+        self.root = root
+        self.duration = duration
+
+        self.splash = tk.Toplevel(root)
+        self.splash.overrideredirect(True)
+        self.splash.configure(bg=BG)
+
+        width = 400
+        height = 250
+
+        x = (self.splash.winfo_screenwidth() // 2) - (width // 2)
+        y = (self.splash.winfo_screenheight() // 2) - (height // 2)
+
+        self.splash.geometry(f"{width}x{height}+{x}+{y}")
+
+        tk.Label(self.splash,
+                 text="🔐 Secure-Password-Generator",
+                 font=("Segoe UI", 18, "bold"),
+                 bg=BG,
+                 fg=ACCENT).pack(pady=40)
+
+        tk.Label(self.splash,
+                 text="Launching secure generator...",
+                 font=("Segoe UI", 10),
+                 bg=BG,
+                 fg=SUBTLE).pack(pady=10)
+
+        try:
+            img = tk.PhotoImage(file=icon_path)
+            tk.Label(self.splash, image=img, bg=BG).pack()
+            self.splash.image = img
+        except:
+            pass
+
+        self.root.after(self.duration, self.close)
+
+    def close(self):
+        self.splash.destroy()
+        self.root.deiconify()
+
+
+# ================= MAIN GUI =================
 class PasswordGeneratorGUI:
     def __init__(self, root):
         self.root = root
@@ -31,17 +75,23 @@ class PasswordGeneratorGUI:
 
         # ===== ICON =====
         try:
-            self.root.iconphoto(True, tk.PhotoImage(file="icon.png"))
+            icon = tk.PhotoImage(file=icon_path)
+            self.root.iconphoto(True, icon)
         except:
-            pass  # ignore if icon missing
+            pass
 
         # ===== STYLE =====
         style = ttk.Style()
         style.theme_use("clam")
+
+        # FIXED COMBOBOX VISIBILITY
         style.configure("TCombobox",
-                        fieldbackground=CARD,
-                        background=CARD,
+                        fieldbackground=BG,
+                        background=BG,
                         foreground=TEXT)
+        style.map("TCombobox",
+                fieldbackground=[("readonly", BG)],
+                foreground=[("readonly", TEXT)])
 
         # ===== HEADER =====
         header = tk.Frame(root, bg=BG)
@@ -84,13 +134,17 @@ class PasswordGeneratorGUI:
                        command=self.toggle_length,
                        bg=CARD, fg=TEXT, selectcolor=BG).pack(side=tk.LEFT, padx=10)
 
+        # ===== LENGTH CONTAINER (NEW) =====
+        self.length_container = tk.Frame(self.card, bg=CARD)
+        self.length_container.pack(pady=5)
+
         # ===== FIXED =====
-        self.frame_fixed = tk.Frame(self.card, bg=CARD)
-        self.frame_fixed.pack(pady=5)
+        self.frame_fixed = tk.Frame(self.length_container, bg=CARD)
+        self.frame_fixed.pack()
         self.make_row("Length:", "length", "12", parent=self.frame_fixed)
 
         # ===== RANGE =====
-        self.frame_range = tk.Frame(self.card, bg=CARD)
+        self.frame_range = tk.Frame(self.length_container, bg=CARD)
 
         tk.Label(self.frame_range, text="Min:", bg=CARD, fg=TEXT).pack(side=tk.LEFT, padx=5)
         self.min_length = tk.Entry(self.frame_range, width=5, bg=BG, fg=TEXT, insertbackground=TEXT)
@@ -125,12 +179,14 @@ class PasswordGeneratorGUI:
                        fg=SUBTLE,
                        selectcolor=BG).pack(pady=5)
 
-        # ===== GENERATE BUTTON =====
+        # ===== GENERATE BUTTON (FIXED TEXT VISIBILITY) =====
         tk.Button(self.card,
                   text="Generate Password",
                   command=self.generate,
                   bg=BUTTON,
-                  fg="white",
+                  fg="#0f172a",
+                  activeforeground="#0f172a",
+                  activebackground="#15803d",
                   font=("Segoe UI", 10, "bold"),
                   relief="flat",
                   padx=10,
@@ -145,12 +201,14 @@ class PasswordGeneratorGUI:
                               relief="flat")
         self.output.pack(padx=10, pady=10, fill="both")
 
-        # ===== COPY BUTTON =====
+        # ===== COPY BUTTON (FIXED) =====
         tk.Button(self.card,
                   text="Copy",
                   command=self.copy,
                   bg="#334155",
-                  fg=TEXT,
+                  fg="#0f172a",
+                  activeforeground="#ffffff",
+                  activebackground="#475569",
                   relief="flat").pack(pady=5)
 
         # ===== FOOTER =====
@@ -176,10 +234,10 @@ class PasswordGeneratorGUI:
     def toggle_length(self):
         if self.length_type.get() == "fixed":
             self.frame_range.pack_forget()
-            self.frame_fixed.pack(pady=5)
+            self.frame_fixed.pack()
         else:
             self.frame_fixed.pack_forget()
-            self.frame_range.pack(pady=5)
+            self.frame_range.pack()
 
     def generate(self):
         try:
@@ -223,12 +281,17 @@ class PasswordGeneratorGUI:
             messagebox.showinfo("Copied", "Copied to clipboard!")
 
 
+# ================= MAIN =================
 if __name__ == "__main__":
     root = tk.Tk()
-    try:
-        icon = tk.PhotoImage(file=icon_path)
-        root.iconphoto(True, icon)
-    except Exception as e:
-        print("Icon not loaded:", e)
-    PasswordGeneratorGUI(root)
+
+    root.withdraw()
+
+    SplashScreen(root, duration=2000)
+
+    def start_app():
+        PasswordGeneratorGUI(root)
+
+    root.after(2000, start_app)
+
     root.mainloop()
