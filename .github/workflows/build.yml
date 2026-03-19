@@ -26,8 +26,22 @@ jobs:
         python -m pip install --upgrade pip
         pip install pyinstaller
 
-    # 🔥 IMPORTANT FIX HERE
-    - name: Build application
+    # 🔥 LINUX + MAC BUILD
+    - name: Build (Linux/macOS)
+      if: runner.os != 'Windows'
+      run: |
+        pyinstaller \
+        --noconfirm \
+        --windowed \
+        --name SecurePasswordGenerator \
+        --paths=. \
+        --hidden-import=password_generator \
+        --hidden-import=password_generator.core \
+        app/main.py
+
+    # 🔥 WINDOWS BUILD
+    - name: Build (Windows)
+      if: runner.os == 'Windows'
       run: |
         pyinstaller ^
         --noconfirm ^
