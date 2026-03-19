@@ -1,4 +1,15 @@
+# Python cache
 __pycache__/
 *.pyc
+
+# Packaging
+*.egg-info/
+dist/
+build/
+
+# Virtual env (if you add later)
+venv/
 .env
+
+# Mac files
 .DS_Store
