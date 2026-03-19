@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-icon_path = os.path.join(BASE_DIR, "passwd-icon.png")
+icon_path = os.path.join(BASE_DIR, "app/assets/passwd-icon.png")
 
 from password_generator.core import (
     build_password_specs,
