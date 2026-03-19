@@ -73,7 +73,15 @@ This generates **3 passwords**, each **12 characters long**, containing **alphab
 You can also run the tool as a module:
 
 ```bash
-python -m password_generator.cli
+python3 -m password_generator.cli
+```
+
+## GUI Version
+
+Run the desktop app:
+
+```bash
+python gui.py
 ```
 
 ---

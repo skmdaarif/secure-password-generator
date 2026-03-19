@@ -25,7 +25,7 @@ BUTTON = "#16a34a"
 class PasswordGeneratorGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("NextGen-Password-Generator")
+        self.root.title("Secure-Password-Generator")
         self.root.geometry("520x600")
         self.root.configure(bg=BG)
 
@@ -48,7 +48,7 @@ class PasswordGeneratorGUI:
         header.pack(pady=15)
 
         tk.Label(header,
-                 text="🔐 NextGen-Password-Generator",
+                 text="🔐 Secure-Password-Generator",
                  font=("Segoe UI", 18, "bold"),
                  bg=BG,
                  fg=ACCENT).pack()
