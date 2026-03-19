@@ -134,15 +134,22 @@ def validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) -> 
             parser.error(f"{name} must be greater than or equal to 0.")
 
     if args.non_interactive:
-        missing = [
-            flag
-            for flag, value in (
-                ("--count", args.count),
-                ("--length", args.length),
-                ("--mode", args.mode),
+        missing = []
+
+        if args.count is None:
+            missing.append("--count")
+
+        if args.length is None:
+            has_range = (
+                hasattr(args, "min_length") and hasattr(args, "max_length")
+                and args.min_length is not None and args.max_length is not None
             )
-            if value is None
-        ]
+            if not has_range:
+                missing.append("--length")
+
+        if args.mode is None:
+            missing.append("--mode")
+
         if missing:
             parser.error("--non-interactive requires " + ", ".join(missing) + ".")
 
@@ -565,28 +572,6 @@ def collect_password_modes(password_count: int, cli_mode: str | None = None) -> 
         get_mode,
     )
 
-
-def build_password_specs(
-    password_count: int,
-    fixed_length: int | None = None,
-    cli_mode: str | None = None,
-) -> list[PasswordSpec]:
-    """Build the final password specifications.
-
-    Args:
-        password_count: Number of passwords to generate.
-        fixed_length: Optional fixed password length from the command line.
-        cli_mode: Optional shared password mode from the command line.
-
-    Returns:
-        A list of ``PasswordSpec`` objects.
-    """
-
-    lengths = collect_password_lengths(password_count, fixed_length=fixed_length)
-    modes = collect_password_modes(password_count, cli_mode=cli_mode)
-    return [PasswordSpec(length=length, mode=mode) for length, mode in zip(lengths, modes)]
-
-
 def get_character_config(length: int, mode: str) -> CharacterConfig:
     """Collect minimum character requirements for one password.
 
@@ -838,6 +823,47 @@ def generate_passwords(
         for password_spec, character_config in zip(password_specs, character_configs)
     ]
 
+def build_password_specs(
+    password_count: int,
+    fixed_length: int | None = None,
+    min_length: int | None = None,
+    max_length: int | None = None,
+    cli_mode: str | None = None,
+) -> list[PasswordSpec]:
+    """Build the final password specifications.
+
+    Supports:
+    - CLI (interactive + non-interactive)
+    - GUI fixed
+    - GUI range (secure)
+    """
+
+    # ✅ GUI RANGE
+    if min_length is not None and max_length is not None:
+        span = max_length - min_length + 1
+        lengths = [
+            min_length + secrets.randbelow(span)
+            for _ in range(password_count)
+        ]
+
+    # ✅ GUI FIXED (important: skip CLI prompts)
+    elif fixed_length is not None and cli_mode is not None:
+        # this condition = GUI or non-interactive CLI
+        lengths = [fixed_length for _ in range(password_count)]
+
+    # ✅ CLI (interactive or mixed)
+    else:
+        lengths = collect_password_lengths(
+            password_count,
+            fixed_length=fixed_length
+        )
+
+    modes = collect_password_modes(password_count, cli_mode=cli_mode)
+
+    return [
+        PasswordSpec(length=length, mode=mode)
+        for length, mode in zip(lengths, modes)
+    ]
 
 def run_cli() -> None:
     """Run the interactive CLI application."""
