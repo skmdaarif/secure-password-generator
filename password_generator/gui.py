@@ -162,10 +162,12 @@ class PasswordGeneratorGUI:
 
         tk.Label(frame_mode, text="Mode:", bg=CARD, fg=TEXT).pack(side=tk.LEFT)
 
-        self.mode = ttk.Combobox(frame_mode,
-                                 values=["a", "n", "s", "an", "as", "ns", "ans"],
-                                 state="readonly",
-                                 width=10)
+        self.mode = ttk.Combobox(
+                            frame_mode,
+                            values=["a", "n", "s", "an", "as", "ns", "ans"],
+                            state="readonly",
+                            width=10,
+                            foreground=TEXT)
         self.mode.current(6)
         self.mode.pack(side=tk.LEFT, padx=10)
 
