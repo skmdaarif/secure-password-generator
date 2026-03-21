@@ -24,6 +24,8 @@ TEXT = "#e2e8f0"
 SUBTLE = "#94a3b8"
 BUTTON = "#16a34a"
 
+def safe_int(value):
+    return int(value) if value.strip() != "" else 0
 
 def evaluate_strength(password):
     score = 0
@@ -74,6 +76,7 @@ class PasswordGeneratorGUI:
         self.root.title("Secure-Password-Generator")
         self.root.geometry("520x720")
         self.root.configure(bg=BG)
+        self.root.resizable(False, False)
 
         self.passwords = []
         self.show_passwords = True
@@ -124,10 +127,11 @@ class PasswordGeneratorGUI:
         self.canvas.bind("<Leave>", lambda e: self.canvas.unbind_all("<MouseWheel>"))
         
         self.card = tk.Frame(self.scrollable_frame, bg=CARD)
-        self.card.pack(padx=20, pady=5, fill="x", anchor="n")
+        self.card.pack(padx=20, pady=2, fill="both", expand=True, anchor="n")
 
         # ===== COUNT =====
-        self.make_row("Number of Passwords:", "count", "1")
+        self.make_row("Number of Passwords:", "count", "")
+        self.count.insert(0, "5")
         self.count_error = tk.Label(self.card, text="", fg="red", bg=CARD)
         self.count_error.pack()
 
@@ -151,7 +155,8 @@ class PasswordGeneratorGUI:
         # FIXED
         self.frame_fixed = tk.Frame(self.length_container, bg=CARD)
         self.frame_fixed.pack(pady=0)
-        self.make_row("Length:", "length", "12", parent=self.frame_fixed)
+        self.make_row("Length:", "length", "", parent=self.frame_fixed)
+        self.length.insert(0, "12")
         self.length_error = tk.Label(self.frame_fixed, text="", fg="red", bg=CARD)
         self.length_error.pack()
 
@@ -228,8 +233,16 @@ class PasswordGeneratorGUI:
         output_frame = tk.Frame(self.card, bg=CARD)
         output_frame.pack(padx=10, pady=10, fill="both")
 
+        output_frame = tk.Frame(self.card, bg=CARD)
+        output_frame.pack(padx=10, pady=10, fill="both")
+
         self.output = tk.Text(output_frame, height=6, bg=BG, fg=ACCENT)
+        scrollbar = tk.Scrollbar(output_frame, command=self.output.yview)
+
+        self.output.configure(yscrollcommand=scrollbar.set)
+
         self.output.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
 
         scroll = tk.Scrollbar(output_frame, command=self.output.yview)
         scroll.pack(side="right", fill="y")
@@ -429,7 +442,7 @@ class PasswordGeneratorGUI:
                         remaining -= upper
 
                     if lower > remaining:
-                        self.lower_error.config(text="Should not exceed remaining password length")
+                        self.lower_error.config(text=f"Total required exceeds password length ({total_length})")
                         errors.append(1)
                     else:
                         remaining -= lower
@@ -437,7 +450,7 @@ class PasswordGeneratorGUI:
                 # ---- NUMERIC ----
                 if "n" in mode:
                     if numeric > remaining:
-                        self.numeric_error.config(text="Should not exceed remaining password length")
+                        self.numeric_error.config(text=f"Total required exceeds password length ({total_length})")
                         errors.append(1)
                     else:
                         remaining -= numeric
@@ -445,20 +458,10 @@ class PasswordGeneratorGUI:
                 # ---- SPECIAL ----
                 if "s" in mode:
                     if special > remaining:
-                        self.special_error.config(text="Should not exceed remaining password length")
+                        self.special_error.config(text=f"Total required exceeds password length ({total_length})")
                         errors.append(1)
                     else:
                         remaining -= special
-                        
-                if "a" not in mode:
-                    self.min_upper.delete(0, tk.END)
-                    self.min_lower.delete(0, tk.END)
-
-                if "n" not in mode:
-                    self.min_numeric.delete(0, tk.END)
-
-                if "s" not in mode:
-                    self.min_special.delete(0, tk.END)
 
             except:
                 self.upper_error.config(text="Invalid input")
@@ -488,10 +491,10 @@ class PasswordGeneratorGUI:
             if self.advanced.get():
                 configs = [
                     CharacterConfig(
-                        upper=int(self.min_upper.get()),
-                        lower=int(self.min_lower.get()),
-                        numeric=int(self.min_numeric.get()),
-                        special=int(self.min_special.get())
+                        upper=safe_int(self.min_upper.get()),
+                        lower=safe_int(self.min_lower.get()),
+                        numeric=safe_int(self.min_numeric.get()),
+                        special=safe_int(self.min_special.get())
                     )
                     for _ in specs
                 ]
