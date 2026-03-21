@@ -21,6 +21,9 @@ from typing import Callable, TypeAlias, TypeVar
 VALID_MODES = {"a", "n", "s", "an", "as", "ns", "ans"}
 YES_NO_ERROR = "Please enter y or n."
 MIN_PASSWORD_LENGTH = 5
+MAX_PASSWORD_LENGTH = 128
+MAX_PASSWORD_COUNT = 1000
+MAX_TOTAL_CHARACTERS = 128000
 AMBIGUOUS_CHARACTERS = set("0Oo1lI")
 secure_random = secrets.SystemRandom()
 T = TypeVar("T")
@@ -119,9 +122,15 @@ def validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) -> 
 
     if args.count is not None and args.count < 1:
         parser.error("--count must be greater than or equal to 1.")
+        
+    if args.count is not None and args.count > MAX_PASSWORD_COUNT:
+        parser.error(f"--count cannot exceed {MAX_PASSWORD_COUNT}.")
 
     if args.length is not None and args.length < MIN_PASSWORD_LENGTH:
         parser.error(f"--length must be greater than or equal to {MIN_PASSWORD_LENGTH}.")
+
+    if args.length is not None and args.length > MAX_PASSWORD_LENGTH:
+        parser.error(f"--length cannot exceed {MAX_PASSWORD_LENGTH}.")
 
     minimum_fields = {
         "--min-upper": args.min_upper,
@@ -342,6 +351,8 @@ def get_password_count(cli_count: int | None = None) -> int:
     """
 
     if cli_count is not None:
+        if cli_count > MAX_PASSWORD_COUNT:
+            raise ValueError(f"Maximum allowed passwords is {MAX_PASSWORD_COUNT}.")
         return cli_count
 
     return get_positive_number("Enter number of passwords to generate: ")
@@ -617,8 +628,11 @@ def get_character_config(length: int, mode: str) -> CharacterConfig:
             numeric=numeric,
             special=special,
         )
-        if config.total() <= length:
-            return config
+        if config.total() > length:
+            print("Minimum character requirements exceed password length.")
+            continue
+
+        return config
 
         print("Total minimum character counts cannot be greater than password length.")
 
@@ -830,6 +844,15 @@ def build_password_specs(
     max_length: int | None = None,
     cli_mode: str | None = None,
 ) -> list[PasswordSpec]:
+    # 🔒 Global safety check
+    if fixed_length is not None:
+        if password_count * fixed_length > MAX_TOTAL_CHARACTERS:
+            raise ValueError("Request too large. Reduce count or length.")
+
+    if min_length is not None and max_length is not None:
+        avg_length = (min_length + max_length) // 2
+        if password_count * avg_length > MAX_TOTAL_CHARACTERS:
+            raise ValueError("Request too large. Reduce count or length.")
     """Build the final password specifications.
 
     Supports:
