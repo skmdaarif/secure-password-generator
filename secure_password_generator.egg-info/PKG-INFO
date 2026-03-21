@@ -1,3 +1,17 @@
+Metadata-Version: 2.4
+Name: secure-password-generator
+Version: 1.0.0
+Summary: Secure password generator with CLI and GUI
+Author: Sheikh Md Aarif Al Zubair
+License-Expression: MIT
+Keywords: password,security,generator,cli,gui
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Dynamic: license-file
+
 # 🔐 Secure Password Generator (CLI + GUI)
 
 A powerful and lightweight password generator with both **CLI** and **GUI** support.

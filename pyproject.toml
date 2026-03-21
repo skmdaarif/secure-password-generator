@@ -1,11 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "secure-password-generator"
-version = "0.1.0"
-description = "CLI tool for generating secure passwords"
+version = "1.0.0"
+description = "Secure password generator with CLI and GUI"
 authors = [
-    { name = "Sheikh Md Aarif Al Zubair", email = "skmd.aarif5391@gmail.com" }
+    { name = "Sheikh Md Aarif Al Zubair" }
 ]
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+
+keywords = ["password", "security", "generator", "cli", "gui"]
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent"
+]
+
 dependencies = []
 
 [project.scripts]
 spg = "password_generator.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["password_generator*"]

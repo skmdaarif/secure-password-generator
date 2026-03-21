@@ -1,0 +1,2 @@
+[console_scripts]
+spg = password_generator.cli:main

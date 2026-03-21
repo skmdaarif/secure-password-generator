@@ -21,9 +21,9 @@ from typing import Callable, TypeAlias, TypeVar
 VALID_MODES = {"a", "n", "s", "an", "as", "ns", "ans"}
 YES_NO_ERROR = "Please enter y or n."
 MIN_PASSWORD_LENGTH = 5
-MAX_PASSWORD_LENGTH = 128
-MAX_PASSWORD_COUNT = 1000
-MAX_TOTAL_CHARACTERS = 128000
+MAX_PASSWORD_LENGTH = 256
+MAX_PASSWORD_COUNT = 5000
+MAX_TOTAL_CHARACTERS = 1280000
 AMBIGUOUS_CHARACTERS = set("0Oo1lI")
 secure_random = secrets.SystemRandom()
 T = TypeVar("T")
@@ -439,10 +439,17 @@ def get_fixed_length_config() -> FixedLengthConfig:
         A ``FixedLengthConfig`` instance.
     """
 
-    length = get_positive_number(
-        "Enter fixed password length: ", minimum=MIN_PASSWORD_LENGTH
-    )
-    return FixedLengthConfig(length=length)
+    while True:
+        length = get_positive_number(
+            "Enter fixed password length: ",
+            minimum=MIN_PASSWORD_LENGTH
+        )
+
+        if length > MAX_PASSWORD_LENGTH:
+            print(f"Maximum length is {MAX_PASSWORD_LENGTH}")
+            continue
+
+        return FixedLengthConfig(length=length)
 
 
 def get_range_length_config() -> RangeLengthConfig:
@@ -454,32 +461,41 @@ def get_range_length_config() -> RangeLengthConfig:
 
     while True:
         minimum = get_positive_number(
-            "Enter minimum password length: ", minimum=MIN_PASSWORD_LENGTH
-        )
-        maximum = get_positive_number(
-            "Enter maximum password length: ", minimum=MIN_PASSWORD_LENGTH
+            "Enter minimum password length: ",
+            minimum=MIN_PASSWORD_LENGTH
         )
 
-        if maximum < minimum + 1:
-            print("Maximum length must be at least minimum length + 1.")
+        maximum = get_positive_number(
+            "Enter maximum password length: ",
+            minimum=MIN_PASSWORD_LENGTH
+        )
+
+        if maximum < minimum:
+            print("Maximum must be >= minimum")
+            continue
+
+        if maximum > MAX_PASSWORD_LENGTH:
+            print(f"Maximum length is {MAX_PASSWORD_LENGTH}")
             continue
 
         return RangeLengthConfig(minimum=minimum, maximum=maximum)
 
 
 def get_length_config(length_mode: str) -> LengthConfig:
-    """Read the selected length configuration.
-
-    Args:
-        length_mode: ``f`` for fixed length or ``r`` for range length.
-
-    Returns:
-        A concrete ``LengthConfig`` instance.
-    """
-
     if length_mode == "f":
-        return get_fixed_length_config()
-    return get_range_length_config()
+        config = get_fixed_length_config()
+        if config is None:
+            raise ValueError("Failed to get fixed length config")
+        return config
+
+    elif length_mode == "r":
+        config = get_range_length_config()
+        if config is None:
+            raise ValueError("Failed to get range length config")
+        return config
+
+    else:
+        raise ValueError("Invalid length mode")
 
 
 def resolve_length(length_config: LengthConfig) -> int:
@@ -516,7 +532,13 @@ def collect_password_lengths(
         return [fixed_length for _ in range(password_count)]
 
     if password_count == 1:
-        return [resolve_length(get_length_config(get_length_mode()))]
+        length_mode = get_length_mode()
+        config = get_length_config(length_mode)
+
+        if isinstance(config, FixedLengthConfig):
+            return [config.length]
+
+        return [resolve_length(config)]
 
     same_length_config = ask_yes_no(
         "Should all passwords use the same length config? (y/n): "
@@ -633,9 +655,6 @@ def get_character_config(length: int, mode: str) -> CharacterConfig:
             continue
 
         return config
-
-        print("Total minimum character counts cannot be greater than password length.")
-
 
 def build_character_config_for_mode(
     mode: str,
@@ -832,6 +851,9 @@ def generate_passwords(
         A list of generated passwords.
     """
 
+    if len(password_specs) > MAX_PASSWORD_COUNT:
+        raise ValueError("Too many passwords requested.")
+
     return [
         generate_password(password_spec, character_config, pool_config)
         for password_spec, character_config in zip(password_specs, character_configs)
@@ -844,24 +866,44 @@ def build_password_specs(
     max_length: int | None = None,
     cli_mode: str | None = None,
 ) -> list[PasswordSpec]:
-    # 🔒 Global safety check
+
+    # ===== COUNT VALIDATION =====
+    if password_count <= 0:
+        raise ValueError("Number of passwords must be greater than zero")
+
+    if password_count > MAX_PASSWORD_COUNT:
+        raise ValueError(f"Number of passwords cannot exceed {MAX_PASSWORD_COUNT}")
+
+    # ===== LENGTH VALIDATION =====
     if fixed_length is not None:
-        if password_count * fixed_length > MAX_TOTAL_CHARACTERS:
-            raise ValueError("Request too large. Reduce count or length.")
+        if fixed_length < MIN_PASSWORD_LENGTH:
+            raise ValueError(f"Password length must be at least {MIN_PASSWORD_LENGTH}")
+
+        if fixed_length > MAX_PASSWORD_LENGTH:
+            raise ValueError(f"Password length cannot exceed {MAX_PASSWORD_LENGTH}")
 
     if min_length is not None and max_length is not None:
-        avg_length = (min_length + max_length) // 2
-        if password_count * avg_length > MAX_TOTAL_CHARACTERS:
-            raise ValueError("Request too large. Reduce count or length.")
-    """Build the final password specifications.
+        if min_length < MIN_PASSWORD_LENGTH:
+            raise ValueError(f"Minimum length must be at least {MIN_PASSWORD_LENGTH}")
 
-    Supports:
-    - CLI (interactive + non-interactive)
-    - GUI fixed
-    - GUI range (secure)
-    """
+        if max_length > MAX_PASSWORD_LENGTH:
+            raise ValueError(f"Maximum length cannot exceed {MAX_PASSWORD_LENGTH}")
 
-    # ✅ GUI RANGE
+        if min_length > max_length:
+            raise ValueError("Minimum length cannot be greater than maximum length")
+
+    # ===== TOTAL CHARACTER LIMIT (FIXED 🔥) =====
+    if fixed_length is not None:
+        total_chars = password_count * fixed_length
+    elif min_length is not None and max_length is not None:
+        total_chars = password_count * max_length  # worst case
+    else:
+        total_chars = 0  # interactive CLI (safe)
+
+    if total_chars > MAX_TOTAL_CHARACTERS:
+        raise ValueError("Request too large. Reduce count or length.")
+
+    # ===== BUILD LENGTHS =====
     if min_length is not None and max_length is not None:
         span = max_length - min_length + 1
         lengths = [
@@ -869,18 +911,16 @@ def build_password_specs(
             for _ in range(password_count)
         ]
 
-    # ✅ GUI FIXED (important: skip CLI prompts)
-    elif fixed_length is not None and cli_mode is not None:
-        # this condition = GUI or non-interactive CLI
+    elif fixed_length is not None:
         lengths = [fixed_length for _ in range(password_count)]
 
-    # ✅ CLI (interactive or mixed)
     else:
         lengths = collect_password_lengths(
             password_count,
             fixed_length=fixed_length
         )
 
+    # ===== MODES =====
     modes = collect_password_modes(password_count, cli_mode=cli_mode)
 
     return [
