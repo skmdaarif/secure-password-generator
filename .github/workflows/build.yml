@@ -8,7 +8,13 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: macos-latest
+            platform: macos
+          - os: windows-latest
+            platform: windows
+          - os: ubuntu-latest
+            platform: linux
 
     runs-on: ${{ matrix.os }}
 
@@ -72,9 +78,24 @@ jobs:
         app/main.py
       shell: cmd
 
-    # 📦 Upload artifacts
-    - name: Upload build artifacts
+    # 📦 Upload artifacts (clean naming)
+    - name: Upload macOS app
+      if: runner.os == 'macOS'
       uses: actions/upload-artifact@v4
       with:
-        name: SecurePasswordGenerator-${{ matrix.os }}
-        path: dist/
+        name: SecurePasswordGenerator-macos
+        path: dist/SecurePasswordGenerator.app
+
+    - name: Upload Windows exe
+      if: runner.os == 'Windows'
+      uses: actions/upload-artifact@v4
+      with:
+        name: SecurePasswordGenerator-windows
+        path: dist/SecurePasswordGenerator.exe
+
+    - name: Upload Linux binary
+      if: runner.os == 'Linux'
+      uses: actions/upload-artifact@v4
+      with:
+        name: SecurePasswordGenerator-linux
+        path: dist/SecurePasswordGenerator
