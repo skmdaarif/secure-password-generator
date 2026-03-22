@@ -78,34 +78,9 @@ jobs:
         app/main.py
       shell: cmd
 
-    # 📦 ZIP (LINUX) ✅ FIXED
-    - name: Zip Linux build
-      if: runner.os == 'Linux'
-      run: |
-        cd dist
-        zip -r ../SecurePasswordGenerator-linux.zip SecurePasswordGenerator
-
-    # 📦 ZIP (macOS) ✅ FIXED (.app INCLUDED)
-    - name: Zip macOS build
-      if: runner.os == 'macOS'
-      run: |
-        cd dist
-        zip -r ../SecurePasswordGenerator-macos.zip SecurePasswordGenerator.app
-
-    # 📦 ZIP (WINDOWS) ✅ FIXED
-    - name: Zip Windows build
-      if: runner.os == 'Windows'
-      run: |
-        cd dist
-        powershell Compress-Archive -Path SecurePasswordGenerator -DestinationPath ../SecurePasswordGenerator-windows.zip
-      shell: cmd
-
-    # 📤 Upload artifacts ✅ FIXED (NO NESTED ZIPS)
+    # 📤 Upload artifacts (NO MANUAL ZIP ❌)
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
         name: SecurePasswordGenerator-${{ matrix.platform }}
-        path: |
-          SecurePasswordGenerator-linux.zip
-          SecurePasswordGenerator-macos.zip
-          SecurePasswordGenerator-windows.zip
+        path: dist/
