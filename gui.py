@@ -76,7 +76,8 @@ class PasswordGeneratorGUI:
         self.root.title("Secure-Password-Generator")
         self.root.geometry("520x720")
         self.root.configure(bg=BG)
-        self.root.resizable(False, False)
+        self.root.resizable(True, True)
+        self.root.minsize(520, 720)
 
         self.passwords = []
         self.show_passwords = True
@@ -125,6 +126,8 @@ class PasswordGeneratorGUI:
         
         self.canvas.bind("<Enter>", lambda e: self.canvas.bind_all("<MouseWheel>", self._on_mousewheel))
         self.canvas.bind("<Leave>", lambda e: self.canvas.unbind_all("<MouseWheel>"))
+        self.canvas.bind_all("<Button-4>", self._on_mousewheel)  # Linux scroll up
+        self.canvas.bind_all("<Button-5>", self._on_mousewheel)  # Linux scroll down
         
         self.card = tk.Frame(self.scrollable_frame, bg=CARD)
         self.card.pack(padx=20, pady=2, fill="both", expand=True, anchor="n")
@@ -268,7 +271,12 @@ class PasswordGeneratorGUI:
         self.validate_inputs()
     
     def _on_mousewheel(self, event):
-        self.canvas.yview_scroll(int(-1 * event.delta / 2), "units")
+        if event.num == 4:  # Linux scroll up
+            self.canvas.yview_scroll(-1, "units")
+        elif event.num == 5:  # Linux scroll down
+            self.canvas.yview_scroll(1, "units")
+        else:  # Windows / macOS
+            self.canvas.yview_scroll(int(-1 * event.delta / 120), "units")
 
     # ===== HELPERS =====
     def make_row(self, label, attr, default, parent=None):
