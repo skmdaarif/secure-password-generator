@@ -49,7 +49,7 @@ jobs:
         --hidden-import=password_generator.core \
         app/main.py
 
-    # 🔥 macOS BUILD (Intel compatible)
+    # 🔥 macOS BUILD
     - name: Build (macOS)
       if: runner.os == 'macOS'
       run: |
@@ -78,9 +78,31 @@ jobs:
         app/main.py
       shell: cmd
 
-    # 📦 Upload artifacts
+    # 📦 ZIP (LINUX)
+    - name: Zip Linux build
+      if: runner.os == 'Linux'
+      run: |
+        cd dist/SecurePasswordGenerator
+        zip -r ../../SecurePasswordGenerator-linux.zip *
+
+    # 📦 ZIP (macOS)
+    - name: Zip macOS build
+      if: runner.os == 'macOS'
+      run: |
+        cd dist/SecurePasswordGenerator
+        zip -r ../../SecurePasswordGenerator-macos.zip *
+
+    # 📦 ZIP (WINDOWS)
+    - name: Zip Windows build
+      if: runner.os == 'Windows'
+      run: |
+        cd dist\SecurePasswordGenerator
+        powershell Compress-Archive -Path * -DestinationPath ..\..\SecurePasswordGenerator-windows.zip
+      shell: cmd
+
+    # 📤 Upload artifacts (clean zips only)
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
         name: SecurePasswordGenerator-${{ matrix.platform }}
-        path: dist/
+        path: SecurePasswordGenerator-*.zip
