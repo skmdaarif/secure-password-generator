@@ -1,69 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Secure Password Generator</title>
-    <style>
-        body {
-            font-family: Arial;
-            background: #0f172a;
-            color: #e2e8f0;
-            text-align: center;
-            padding: 40px;
-        }
-        h1 {
-            color: #22c55e;
-        }
-        .card {
-            background: #1e293b;
-            padding: 20px;
-            border-radius: 10px;
-            display: inline-block;
-        }
-        a {
-            color: #22c55e;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        button {
-            background: #16a34a;
-            border: none;
-            padding: 10px 20px;
-            color: #0f172a;
-            font-weight: bold;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Secure Password Generator</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: "Segoe UI", sans-serif;
+    background: linear-gradient(135deg, #0f172a, #020617);
+    color: #e2e8f0;
+    text-align: center;
+}
+
+/* HERO */
+.hero {
+    padding: 80px 20px;
+}
+
+.hero h1 {
+    font-size: 40px;
+    color: #22c55e;
+}
+
+.hero p {
+    color: #94a3b8;
+    font-size: 18px;
+}
+
+/* BUTTONS */
+.btn {
+    display: inline-block;
+    margin: 10px;
+    padding: 12px 24px;
+    background: #22c55e;
+    color: #020617;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.btn:hover {
+    background: #16a34a;
+}
+
+/* CARD */
+.card {
+    margin: 40px auto;
+    padding: 30px;
+    max-width: 500px;
+    background: #1e293b;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.4);
+}
+
+/* FEATURES */
+.features {
+    text-align: left;
+    margin-top: 20px;
+}
+
+.features li {
+    margin: 8px 0;
+}
+</style>
 </head>
+
 <body>
 
-<h1>🔐 Secure Password Generator</h1>
+<div class="hero">
+    <h1>🔐 Secure Password Generator</h1>
+    <p>Generate strong, secure passwords with GUI & CLI support</p>
+
+    <a class="btn" href="https://github.com/skmdaarif/secure-password-generator/releases">
+        🚀 Download
+    </a>
+
+    <a class="btn" href="https://github.com/skmdaarif/secure-password-generator">
+        💻 View Code
+    </a>
+</div>
 
 <div class="card">
-    <p>A cross-platform password generator with CLI & GUI.</p>
-
-    <h3>🚀 Download</h3>
-    <p>
-        <a href="https://github.com/skmdaarif/secure-password-generator/releases">
-            Latest Release
-        </a>
-    </p>
-
-    <h3>💻 Features</h3>
-    <ul style="text-align:left;">
-        <li>Secure password generation</li>
-        <li>GUI + CLI</li>
-        <li>Advanced character rules</li>
-        <li>Cross-platform</li>
+    <h2>✨ Features</h2>
+    <ul class="features">
+        <li>🔒 Cryptographically secure passwords</li>
+        <li>🖥️ GUI + CLI support</li>
+        <li>⚙️ Advanced character rules</li>
+        <li>🌍 Cross-platform (Mac, Windows, Linux)</li>
     </ul>
+</div>
 
-    <h3>📂 Source Code</h3>
-    <p>
-        <a href="https://github.com/skmdaarif/secure-password-generator">
-            View on GitHub
-        </a>
-    </p>
+<div class="card">
+    <h2>📦 Built With</h2>
+    <p>Python • Tkinter • PyInstaller • GitHub Actions</p>
 </div>
 
 </body>
